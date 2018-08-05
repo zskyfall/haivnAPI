@@ -10,6 +10,13 @@ const NUMB_ONE_HUNDRED = 100;
 
 
 var photoSchema = mongoose.Schema({
+	rawDate: {
+		type: Date,
+		default: Date.now
+	},
+	created: {
+		type: String
+	},
 	title: {
 		type: String
 	},
@@ -31,7 +38,7 @@ var photoSchema = mongoose.Schema({
 		avatar: {
 			type: String
 		},
-		id: {
+		username: {
 			type: String
 		}
 	}
@@ -55,6 +62,11 @@ module.exports.getHotPhotos = function(callback) {
 	Photo.find(query, callback);
 };
 
+module.exports.getPhotoById = function(id, callback) {
+	var query = {_id: id};
+	Photo.findOne(query, callback);
+};
+
 module.exports.updateLike = function(number, postId, callback) {
 	var query = {postId: postId};
 
@@ -68,4 +80,10 @@ module.exports.updateLike = function(number, postId, callback) {
 		return callback(TEXT_BLANK);
 
 	}
+};
+
+module.exports.deletePhotoById = function(id, callback) {
+	var query = {_id: id};
+
+	Photo.remove(query, callback);
 }

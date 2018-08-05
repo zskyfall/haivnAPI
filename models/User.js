@@ -68,7 +68,7 @@ module.exports.addNewUser = function(user, callback) {
 	newUser.save(callback);
 }
 
-module.exports.updateUser = function(oldUserId, newUser, callback) {
-	var query = {_id: oldUserId};
+module.exports.updateUser = function(username, newUser, callback) {
+	var query = {username: username};
 	User.update(query, newUser, callback);
 }

@@ -4,6 +4,7 @@ var router = express.Router();
 var User = require('../models/User');
 var OOPUser = require('../models/OOPUser');
 var Photo = require('../models/Photo');
+var base64Img = require('base64-img');
 /* Utils */
 let paginate = require('../utils').paginate;
 let validate = require('../utils').validate;
@@ -174,11 +175,11 @@ router.post('/register', function(req, res){
 
 		if(validate(username) && validate(password) && validate(fullName) && validate(email)) {
 			
-			User.isExistUser(username, email, (err, count) => {
-				if(err) {
+			User.isExistUser(username, email, (errr, count) => {
+				if(errr) {
 					var result = {
 						message: TEXT_ERROR,
-						description: err
+						description: errr
 					};
 
 					res.json(result);
@@ -198,6 +199,7 @@ router.post('/register', function(req, res){
 						User.addNewUser(user, function(err) {
 
 							if(err) {
+								console.log("loi 1");
 								var result = {
 									message: TEXT_ERROR,
 									description: err
@@ -206,12 +208,28 @@ router.post('/register', function(req, res){
 								res.json(result);
 							}
 							else{
-								var result = {
-									message: TEXT_OK,
-									description: MESSAGE_REGISTER_SUCCESS
-								};
+										console.log("2");
+										User.getUserByUsername(username, function(er, resultUser) {
 
-								res.json(result);
+											if(er) {
+												var result = {
+													message: TEXT_ERROR,
+													description: er
+												};
+												console.log("3");
+
+												res.json(result);
+											}
+											else {
+												var result = {
+													message: TEXT_OK,
+													user: resultUser
+												};
+												console.log("4");
+												res.json(result);
+											}
+
+										});
 							}
 						});
 
@@ -230,55 +248,109 @@ router.post('/register', function(req, res){
 
 });
 
-router.put('/update', function(req, res) {
-	var oldUserId = req.query.id;
+router.post('/update', function(req, res) {
 
 	var user = req.body;
 		var username = user.username;
 		var password = user.password;
 		var fullName = user.fullName;
 		var email = user.email;
-		var avatar = user.avatar;
+		var rawAvatar = user.avatar;
 
-		if(validate(username) && validate(password) && validate(fullName)
-		 && validate(email) && validate(avatar) && validate(oldUserId)) {
-			
-				User.updateUser(oldUserId, user, function(err) {
+		console.log(user);
 
-					if(err) {
-						var result = {
-							message: TEXT_ERROR,
-							description: MESSAGE_UPDATE_ERROR
-						};
+		if(validate(username) && validate(password) && validate(fullName) && validate(email)) {
 
-						res.json(result);
-					}
-					else {
+			if(validate(rawAvatar)) {
 
-						User.getUserById(oldUserId, function(er, user) {
-
-							if(er) {
-								var result = {
-									message: TEXT_ERROR,
-									description: er
-								};
-
-								res.json(result);
+					base64Img.img('data:image/png;base64,'+ rawAvatar, 'public/uploads/users', username+'_avatar', function(errr, filepath) {
+						if(errr) {
+							var result = {
+								message: TEXT_ERROR,
+								description: errr
 							}
-							else {
-								var result = {
-									message: TEXT_OK,
-									user: user
-								};
+							res.json(result);
+						}
+						else {	
+								User.updateUser(username, {fullName: fullName, email: email, password: password, avatar: filepath}, function(err) {
 
-								res.json(result);
-							}
+									if(err) {
+										var result = {
+											message: TEXT_ERROR,
+											description: MESSAGE_UPDATE_ERROR
+										};
 
-						});
+										res.json(result);
+									}
+									else {
 
-					}
+										User.getUserByUsername(username, function(er, resultUser) {
 
-				});
+											if(er) {
+												var result = {
+													message: TEXT_ERROR,
+													description: er
+												};
+
+												res.json(result);
+											}
+											else {
+												var result = {
+													message: TEXT_OK,
+													user: resultUser
+												};
+
+												res.json(result);
+											}
+
+										});
+
+									}
+
+								});
+						}
+					});
+			}
+
+			else {
+								User.updateUser(username, {fullName: fullName, email: email, password: password}, function(err) {
+
+									if(err) {
+										var result = {
+											message: TEXT_ERROR,
+											description: MESSAGE_UPDATE_ERROR
+										};
+
+										res.json(result);
+									}
+									else {
+
+										User.getUserByUsername(username, function(er, resultUser) {
+
+											if(er) {
+												var result = {
+													message: TEXT_ERROR,
+													description: er
+												};
+
+												res.json(result);
+											}
+											else {
+												var result = {
+													message: TEXT_OK,
+													user: resultUser
+												};
+
+												res.json(result);
+											}
+
+										});
+
+									}
+
+								});
+			}
+				
 		}
 		else {
 			var result = {

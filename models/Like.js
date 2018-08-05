@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var likeSchema = mongoose.Schema({
-	userId: {
+	username: {
 		type: String
 	},
 	postId: {
@@ -11,18 +11,18 @@ var likeSchema = mongoose.Schema({
 
 var Like = module.exports = mongoose.model('Like', likeSchema);
 
-module.exports.addLike = function(userId, postId, callback) {
+module.exports.addLike = function(username, postId, callback) {
 	
 	var like = new Like({
-		userId: userId,
+		username: username,
 		postId: postId
 	});
 
 	like.save(callback);
 }
 
-module.exports.hasLike = function(userId, postId, callback) {
-	var query = {userId: userId, postId: postId};
+module.exports.hasLike = function(username, postId, callback) {
+	var query = {username: username, postId: postId};
 	Like.count(query, (err, count) => {
 		if(err) {
 			return callback(false);
@@ -38,7 +38,7 @@ module.exports.hasLike = function(userId, postId, callback) {
 	});
 }
 
-module.exports.removeLike = function(userId, postId, callback) {
-	var query = {userId: userId, postId: postId}
+module.exports.removeLike = function(username, postId, callback) {
+	var query = {username: username, postId: postId}
 	Like.remove(query, callback);
 }
